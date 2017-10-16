@@ -8,12 +8,11 @@
 
 #include "timedLine.hpp"
 
-TimedLine::TimedLine() {
-}
-
-TimedLine::TimedLine(const vector<ofPoint>& pts) {
+TimedLine::TimedLine(const vector<ofPoint>& pts, float weight) {
+    lineWeight = weight;
+    
     for (int i = 0; i < pts.size(); i++) {
-        line.addVertex(pts[i]);
+        line.add(pts[i], ofColor::white, lineWeight);
         timeCreated.push_back(ofGetElapsedTimef());
     }
 }
@@ -21,19 +20,22 @@ TimedLine::TimedLine(const vector<ofPoint>& pts) {
 TimedLine::TimedLine(const TimedLine& t) {
     line = t.line;
     timeCreated = t.timeCreated;
+    lineWeight = t.lineWeight;
 }
 
-void TimedLine::draw() const {
+void TimedLine::draw() {
     line.draw();
 }
 
 void TimedLine::addVertex(float x, float y) {
-    line.addVertex(x,y);
+    ofPoint pt;
+    pt.set(x,y);
+    line.add(pt, ofColor::white, lineWeight);
     timeCreated.push_back(ofGetElapsedTimef());
 }
 
 void TimedLine::addVertex(const ofPoint& p) {
-    line.addVertex(p);
+    line.add(p, ofColor::white, lineWeight);
     timeCreated.push_back(ofGetElapsedTimef());
 }
 
@@ -41,13 +43,15 @@ void TimedLine::addVertex(const ofPoint& p) {
 // longer than the given wait time
 // Returns the number of vertices that were removed
 int TimedLine::stripVertices(int waitTime) {
-    ofPolyline tmpLine;
+    ofxFatLine tmpLine;
     vector<float> tmpTimes;
+    
+    ofLog() << "lineweight: " << lineWeight << endl;
     
     // Copy the vertices that will not be removed
     for (int i = 0; i < timeCreated.size(); i++) {
         if (ofGetElapsedTimef() - timeCreated[i] < waitTime) {
-            tmpLine.addVertex(line.getVertices()[i]);
+            tmpLine.add(line.getVertices()[i], ofColor::white, lineWeight);
             tmpTimes.push_back(timeCreated[i]);
             
         }
@@ -63,3 +67,10 @@ int TimedLine::stripVertices(int waitTime) {
     return numDeleted;
 }
 
+// Changes the weight of the line, need to change for all vertices in line
+void TimedLine::changeWeight(float newWeight) {
+    for (int i = 0; i < line.size(); i++) {
+        line.updateWeight(i, newWeight);
+    }
+    line.update();
+}

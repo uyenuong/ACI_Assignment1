@@ -38,8 +38,7 @@ class ofApp : public ofBaseApp{
     vector<ofRectangle> rects;
     
     // Storing all of the lines that we draw
-    ofxFatLine thickLine;
-    ofPolyline l;
+    float lineWeight;
     TimedLine line;
     list<TimedLine> lines;
     

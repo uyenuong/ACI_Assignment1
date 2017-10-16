@@ -15,7 +15,8 @@ void ofApp::setup(){
     drawSquare = true;
     
     radius = 20;
-    ofSetLineWidth(10);
+    lineWeight = 5;
+    line = TimedLine(lineWeight);
     waitTime = 2;
     
     // load in images
@@ -50,7 +51,8 @@ void ofApp::update(){
         int ptsDeleted = itr->stripVertices(waitTime);
         
         if (ptsDeleted > 0) {
-            waitTime += 0.75;
+            waitTime += 0.5;
+            ofLog() << "wait time: " << waitTime <<endl;
         }
         
         if (itr->size() == 0) {
@@ -67,15 +69,13 @@ void ofApp::draw(){
     backgrounds[currentImg].draw(0,0);
     
     // Draw all the rectangles we've placed
-    for (int i = 0; i < rects.size(); i++) {
+//    for (int i = 0; i < rects.size(); i++) {
 //        ofSetColor(ofColor::azure);
-        ofDrawRectangle(rects[i]);
-    }
-//    ofRectang
+//        ofDrawRectangle(rects[i]);
+//    }
     
     // Draw all the lines we've placed
     line.draw();
-    thickLine.draw();
     for (list<TimedLine>::iterator itr = lines.begin(); itr != lines.end(); itr++) {
         itr->draw();
     }
@@ -85,24 +85,27 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     // Switching between drawing circles and squares
-    if (key == 'c') {
+    if (key == 'c' || key == 'C') {
         drawCircle = true;
         drawSquare = false;
-    } else if (key == 'r') {
+    } else if (key == 'r' || key == 'R') {
         drawCircle = false;
         drawSquare = true;
     }
     
     // Increasing/decreasing the size of the drawn shape
     else if (key == ']') {
-        radius += 5;
-    } else if (key == '[' && radius > 10) {
-        radius -= 5;
-        
+//        radius += 5;
+        lineWeight += 2;
+        line = TimedLine(lineWeight);
+    } else if (key == '[' && lineWeight > 1) {
+//        radius -= 5;
+        lineWeight -= 2;
+        line = TimedLine(lineWeight);
     }
     
     // Changing the background
-    else if (key == 'b') {
+    else if (key == 'b' || key == 'B') {
         currentImg = (currentImg + 1) % backgrounds.size();
     }
 
@@ -124,22 +127,17 @@ void ofApp::mouseDragged(int x, int y, int button){
     ofPoint pt;
     pt.set(x,y);
     line.addVertex(pt);
-    l.addVertex(pt);
     
 //    ofRectangle r = ofRectangle(x, y, radius, radius);
 //    rects.push_back(r);
     
-    // If crosses itself, play a noise
-//    if (line.size() > 0 && line.getVertices()[0] == pt) {
-//        magic.play();
-//    }
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
     // draw rectangle onto screen
-    ofRectangle r = ofRectangle(x, y, radius, radius);
-    rects.push_back(r);
+//    ofRectangle r = ofRectangle(x, y, radius, radius);
+//    rects.push_back(r);
 
 }
 
@@ -152,8 +150,7 @@ void ofApp::mouseReleased(int x, int y, int button){
     
     // Store the line we just made into our vector
     lines.push_back(line);
-    line = TimedLine();
-    thickLine.setFromPolyline(l);
+    line = TimedLine(lineWeight);
     
 }
 
