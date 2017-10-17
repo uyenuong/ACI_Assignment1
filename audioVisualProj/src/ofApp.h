@@ -44,9 +44,19 @@ class ofApp : public ofBaseApp{
     
     int waitTime;  // the amount of time to wait for a vertex to be deleted
     
+    // Store background sfx
+    vector<ofSoundPlayer> backgroundSfx;
+    
     // Store images to loop through
     vector<ofImage> backgrounds;
     vector<ofImage> foregrounds;
     int currentImg;
+    
+    // Frame buffers to create alpha mask
+    ofFbo maskFbo;
+    ofFbo fbo;
+    
+    // Shader to composite the images together using the mask
+    ofShader shader;
     
 };

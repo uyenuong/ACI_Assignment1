@@ -15,8 +15,8 @@
 
 class TimedLine  {
 public:
-    TimedLine() {}
-    TimedLine(float weight) : lineWeight(weight) {};
+    TimedLine();
+    TimedLine(float weight);
     TimedLine(const vector<ofPoint>& pts, float weight);
     TimedLine(const TimedLine& t);
     

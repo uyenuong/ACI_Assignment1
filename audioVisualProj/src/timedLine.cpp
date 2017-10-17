@@ -8,6 +8,15 @@
 
 #include "timedLine.hpp"
 
+TimedLine::TimedLine() {
+    line.setFeather(5);
+}
+
+TimedLine::TimedLine(float weight) {
+    lineWeight = weight;
+    line.setFeather(weight);
+}
+
 TimedLine::TimedLine(const vector<ofPoint>& pts, float weight) {
     lineWeight = weight;
     
@@ -15,6 +24,8 @@ TimedLine::TimedLine(const vector<ofPoint>& pts, float weight) {
         line.add(pts[i], ofColor::white, lineWeight);
         timeCreated.push_back(ofGetElapsedTimef());
     }
+    
+    line.setFeather(weight);
 }
 
 TimedLine::TimedLine(const TimedLine& t) {
@@ -37,6 +48,7 @@ void TimedLine::addVertex(float x, float y) {
 void TimedLine::addVertex(const ofPoint& p) {
     line.add(p, ofColor::white, lineWeight);
     timeCreated.push_back(ofGetElapsedTimef());
+    cout << line.getCapType() << endl;
 }
 
 // Gets rid of the vertices in the point that have been alive
@@ -45,9 +57,7 @@ void TimedLine::addVertex(const ofPoint& p) {
 int TimedLine::stripVertices(int waitTime) {
     ofxFatLine tmpLine;
     vector<float> tmpTimes;
-    
-    ofLog() << "lineweight: " << lineWeight << endl;
-    
+        
     // Copy the vertices that will not be removed
     for (int i = 0; i < timeCreated.size(); i++) {
         if (ofGetElapsedTimef() - timeCreated[i] < waitTime) {
@@ -61,7 +71,7 @@ int TimedLine::stripVertices(int waitTime) {
     if (numDeleted > 0) {
         line = tmpLine;
         timeCreated = tmpTimes;
-        waitTime += 0.5;
+        line.setFeather(lineWeight);
     }
     
     return numDeleted;
@@ -72,5 +82,7 @@ void TimedLine::changeWeight(float newWeight) {
     for (int i = 0; i < line.size(); i++) {
         line.updateWeight(i, newWeight);
     }
+    lineWeight = newWeight;
+    line.setFeather(lineWeight);
     line.update();
 }

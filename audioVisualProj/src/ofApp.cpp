@@ -2,18 +2,37 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofBackground(0, 0, 0);
+    // load shader
+#ifdef TARGET_OPENGLES
+    shader.load("shadersES2/shader");
+#else
+    if(ofIsGLProgrammableRenderer()){
+        shader.load("shadersGL3/shader");
+    }else{
+        shader.load("shadersGL2/shader");
+    }
+#endif
     
     // load in sounds:
     chime.load("sounds/chimes_short.mp3");
     magic.load("sounds/sfx-magic.wav");
     
-//    color = ofColor::azure;
+    ofSoundPlayer sfx;
+    sfx.load("sounds/russian-rain.mp3");
+    sfx.setLoop(true);
+    backgroundSfx.push_back(sfx);
+    sfx.load("sounds/steady-rain.wav");
+    sfx.setLoop(true);
+    backgroundSfx.push_back(sfx);
+    sfx.load("sounds/rainy-night.mp3");
+    sfx.setLoop(true);
+    backgroundSfx.push_back(sfx);
 
     // default drawing rectangles
     drawCircle = false;
     drawSquare = true;
-    
+
+    // set up line
     radius = 20;
     lineWeight = 5;
     line = TimedLine(lineWeight);
@@ -36,6 +55,22 @@ void ofApp::setup(){
     
     currentImg = 0;
     
+    // allocate space for the frame buffers
+    maskFbo.allocate(ofGetWidth(), ofGetHeight());
+    fbo.allocate(ofGetWidth(), ofGetHeight());
+    
+    // Clear the FBO's
+    // otherwise it will bring some junk with it from the memory
+    maskFbo.begin();
+    ofClear(0,0,0,255);
+    maskFbo.end();
+    
+    fbo.begin();
+    ofClear(0,0,0,255);
+    fbo.end();
+    
+    // Play the background noise
+    backgroundSfx[currentImg].play();
     
 }
 
@@ -52,7 +87,6 @@ void ofApp::update(){
         
         if (ptsDeleted > 0) {
             waitTime += 0.5;
-            ofLog() << "wait time: " << waitTime <<endl;
         }
         
         if (itr->size() == 0) {
@@ -65,8 +99,6 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    // Draw the background
-    backgrounds[currentImg].draw(0,0);
     
     // Draw all the rectangles we've placed
 //    for (int i = 0; i < rects.size(); i++) {
@@ -74,11 +106,44 @@ void ofApp::draw(){
 //        ofDrawRectangle(rects[i]);
 //    }
     
+    
+    //----------------------------------------------------------
+    // this is our alpha mask which we draw into.
+    maskFbo.begin();
+    
+    // Clear mask each time draw on it, so that the line disappears
+    ofClear(0,0,0,255);
+    
     // Draw all the lines we've placed
     line.draw();
     for (list<TimedLine>::iterator itr = lines.begin(); itr != lines.end(); itr++) {
         itr->draw();
     }
+    
+    maskFbo.end();
+    
+    //----------------------------------------------------------
+    // HERE the shader-masking happens
+    fbo.begin();
+    // Cleaning everthing with alpha mask on 0 in order to make it transparent by default
+    ofClear(0, 0, 0, 0);
+    
+    shader.begin();
+    // here is where the fbo is passed to the shader
+    shader.setUniformTexture("maskTex", maskFbo.getTexture(), 1 );
+    
+    // Draw the background
+    backgrounds[currentImg].draw(0,0);
+    
+    shader.end();
+    fbo.end();
+    
+    //----------------------------------------------------------
+    // FIRST draw the foreground image
+    foregrounds[currentImg].draw(0,0);
+    
+    // THEN draw the masked fbo on top
+    fbo.draw(0,0);
 
 }
 
@@ -107,6 +172,14 @@ void ofApp::keyPressed(int key){
     // Changing the background
     else if (key == 'b' || key == 'B') {
         currentImg = (currentImg + 1) % backgrounds.size();
+        backgroundSfx[currentImg].play();
+    }
+    
+    // Clearing the window
+    else if (key == ' ') {
+        maskFbo.begin();
+        ofClear(0,0,0,255);
+        maskFbo.end();
     }
 
 }
