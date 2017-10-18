@@ -1,4 +1,4 @@
-This is the first assignment for Art, Code and Interactivity, creating an interactive audio and visual piece.
+This is the first assignment for Art, Code and Interactivity, creating interactive graphics and sound.
 
 Addons to install for OpenFrameworks:
 	- ofxFatLines https://github.com/roymacdonald/ofxFatLines
