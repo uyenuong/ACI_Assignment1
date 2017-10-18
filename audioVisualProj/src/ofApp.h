@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "timedLine.hpp"
 #include "ofxFatLine.h"
+#include "ofxMaxim.h"
 
 class ofApp : public ofBaseApp{
 
@@ -22,6 +23,15 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+    
+    // Audio output and input methods
+    void audioOut(float * output, int bufferSize, int nChannels);
+    void audioIn(float * input, int bufferSize, int nChannels);
+    
+    // Maximilian stuff
+    int bufferSize; /* buffer size */
+    int sampleRate;
+    maxiSample sound;
     
         // Sound effects
     ofSoundPlayer chime;
@@ -58,5 +68,8 @@ class ofApp : public ofBaseApp{
     
     // Shader to composite the images together using the mask
     ofShader shader;
+    
+    // Ratio of how much background is shown to how much foreground is shown
+    float ratioShown;
     
 };

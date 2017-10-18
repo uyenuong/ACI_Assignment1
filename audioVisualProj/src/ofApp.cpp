@@ -13,6 +13,15 @@ void ofApp::setup(){
     }
 #endif
     
+    /* This is stuff you always need for Maximilian */
+    ofSetFrameRate(60);
+    sampleRate     = 44100; /* Sampling Rate */
+    bufferSize    = 512; /* Buffer Size. you have to fill this buffer with sound using the for loop in the audioOut method */
+    ofxMaxiSettings::setup(sampleRate, 2, bufferSize);
+    ofSetVerticalSync(true);
+    ofEnableAlphaBlending();
+    ofEnableSmoothing();
+    
     // load in sounds:
     chime.load("sounds/chimes_short.mp3");
     magic.load("sounds/sfx-magic.wav");
@@ -27,6 +36,8 @@ void ofApp::setup(){
     sfx.load("sounds/rainy-night.mp3");
     sfx.setLoop(true);
     backgroundSfx.push_back(sfx);
+    
+    sound.load(ofToDataPath("russian-night.mp3"));
 
     // default drawing rectangles
     drawCircle = false;
@@ -36,7 +47,7 @@ void ofApp::setup(){
     radius = 20;
     lineWeight = 5;
     line = TimedLine(lineWeight);
-    waitTime = 2;
+    waitTime = 5;
     
     // load in images
     ofImage img = ofImage("images/city_night.jpg");
@@ -69,16 +80,50 @@ void ofApp::setup(){
     ofClear(0,0,0,255);
     fbo.end();
     
-    // Play the background noise
+    ratioShown = 0;
+    
+    // Play the background noise, applying a low pass filter
     backgroundSfx[currentImg].play();
+    backgroundSfx[currentImg].setVolume(MIN(.1 + ratioShown,1));
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
+    
+    
+//    for (int i = 0; i < bufferSize; i++){
+//
+//        maxiFilter myFilter;
+//        double myFilteredOutput = myFilter.lopass(sound.play(),800);
+//
+////        output[i] = myFilteredOutput;
+////        output[1] = output[0];
+//
+//
+//
+//        output[i*nChannels    ] = myFilteredOutput; /* You may end up with lots of outputs. add them here */
+//        output[i*nChannels + 1] = myFilteredOutput;
+//
+//    }
+    
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::audioIn(float * input, int bufferSize, int nChannels){
     
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     
-    // update the sound playing system:
+    // the volume of the background noise is proportional to
+    // the amount of background that is shown
+    // update the sound playing system
+    backgroundSfx[currentImg].setVolume(MIN(.1 + ratioShown,1));
     ofSoundUpdate();
+//    cout << "volume: " << backgroundSfx[currentImg].getVolume() << endl;
     
     // get rid of vertices in lines that have been present for a certain amount of time
     // if a line has no more vertices, remove it from the list
@@ -145,6 +190,43 @@ void ofApp::draw(){
     // THEN draw the masked fbo on top
     fbo.draw(0,0);
 
+    // ratio of how much background shown vs foreground
+    // convert FBO into pixels
+    ofPixels fboPixels;
+    fbo.readToPixels(fboPixels);
+    
+    // convert pixels into a texture
+//    ofTexture tex;
+//    tex.loadData(fboPixels);
+//    tex.draw(0,0);
+
+    // get pixels of background image
+    ofPixels backgroundPixels = foregrounds[currentImg].getPixels();
+    
+    // RGB values are interlaced (0=R, 1=G, 2=B for 1st pixel)
+    // if pixel in fbo is not (0,0,0) then it was drawn on/shows the background
+    int numPixels = 0;  // number of pixels drawn on
+    for (int i = 0; i < fboPixels.size(); i+=3) {
+
+        if (fboPixels[i] != 0 ||
+            fboPixels[i+1] != 0 ||
+            fboPixels[i+2] != 0) {
+            numPixels++;
+//            cout << i/3 << endl;
+        }
+        
+//        if (fboPixels.getColor(i) != ofColor(0,0,0,0)) {
+//            pixSame++;
+//            cout << i << " " << fboPixels.getColor(i) << endl;
+//        }
+//            cout << i << " " << fboPixels.getColor(i) << endl;
+//        if (fboPixels.getColor(i) == backgroundPixels.getColor(i)) {}
+    }
+//    cout << "num pixels: " << fboPixels.size() << endl;
+//    ofLog() << "numPixels: " << numPixels << endl;
+    
+    ratioShown = float(numPixels) / (fboPixels.size()/3);
+//    cout << ratioShown << endl;
 }
 
 //--------------------------------------------------------------

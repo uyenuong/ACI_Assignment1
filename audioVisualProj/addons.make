@@ -2,3 +2,4 @@ ofxAnimatable
 ofxFatLines
 ofxFft
 ofxGui
+ofxMaxim

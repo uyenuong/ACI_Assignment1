@@ -48,7 +48,6 @@ void TimedLine::addVertex(float x, float y) {
 void TimedLine::addVertex(const ofPoint& p) {
     line.add(p, ofColor::white, lineWeight);
     timeCreated.push_back(ofGetElapsedTimef());
-    cout << line.getCapType() << endl;
 }
 
 // Gets rid of the vertices in the point that have been alive
