@@ -24,25 +24,13 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
-    // Audio output and input methods
+    // Audio output methods
     void audioOut(float * output, int bufferSize, int nChannels);
-    void audioIn(float * input, int bufferSize, int nChannels);
     
     // Maximilian stuff
     int bufferSize; /* buffer size */
     int sampleRate;
     maxiSample sound;
-    
-        // Sound effects
-    ofSoundPlayer chime;
-    ofSoundPlayer magic;
-    
-    // Brush size, shape
-    float radius;
-    bool drawCircle;
-    bool drawSquare;
-    
-    ofColor color;
     
     // All of the shapes to draw
     vector<ofRectangle> rects;
