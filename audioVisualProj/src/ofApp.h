@@ -11,6 +11,7 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
+     void exit();
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -31,6 +32,8 @@ class ofApp : public ofBaseApp{
     int bufferSize; /* buffer size */
     int sampleRate;
     maxiSample sound;
+    maxiFilter m_filter_lp;
+    float m_param_lp_cutoff;
     
     // All of the shapes to draw
     vector<ofRectangle> rects;
