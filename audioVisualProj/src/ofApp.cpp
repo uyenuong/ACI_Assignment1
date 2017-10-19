@@ -17,7 +17,14 @@ void ofApp::setup(){
     ofSetFrameRate(60);
     sampleRate     = 44100; /* Sampling Rate */
     bufferSize    = 512; /* Buffer Size. fill this buffer with sound using the for loop in the audioOut method */
+    // ofxMaxim can only read wav and ogg files
+    sound.load(ofToDataPath("sounds/steady-rain.wav"));
+
+    
     ofxMaxiSettings::setup(sampleRate, 2, bufferSize);
+    ofSoundStreamSetup(2, 0, sampleRate, bufferSize, 4);
+    m_param_lp_cutoff = 1.0;
+    
     ofSetVerticalSync(true);
     ofEnableAlphaBlending();
     ofEnableSmoothing();
@@ -33,8 +40,6 @@ void ofApp::setup(){
     sfx.setLoop(true);
     backgroundSfx.push_back(sfx);
     
-    // ofxMaxim can only read wav and ogg files
-    sound.load(ofToDataPath("sounds/steady-rain.wav"));
 
     // set up line
     lineWeight = 5;
@@ -75,8 +80,9 @@ void ofApp::setup(){
     ratioShown = 0;
     
     // Play the background noise, applying a low pass filter
-    backgroundSfx[currentImg].play();
-    backgroundSfx[currentImg].setVolume(MIN(.1 + ratioShown,1));
+//    backgroundSfx[currentImg].play();
+//    backgroundSfx[currentImg].setVolume(MIN(.1 + ratioShown,1));
+    
     
 }
 
@@ -86,8 +92,8 @@ void ofApp::update(){
     // the volume of the background noise is proportional to
     // the amount of background that is shown
     // update the sound playing system
-    backgroundSfx[currentImg].setVolume(MIN(.1 + ratioShown,1));
-    ofSoundUpdate();
+//    backgroundSfx[currentImg].setVolume(MIN(.1 + ratioShown,1));
+//    ofSoundUpdate();
 //    cout << "volume: " << backgroundSfx[currentImg].getVolume() << endl;
     
     // get rid of vertices in lines that have been present for a certain amount of time
@@ -202,6 +208,17 @@ void ofApp::keyPressed(int key){
         ofClear(0,0,0,255);
         maskFbo.end();
     }
+    
+    // Clearing the window
+    else if (key == 'q') {
+        if(m_param_lp_cutoff < 1.0)
+            m_param_lp_cutoff += .05;
+    }
+    else if (key == 'a') {
+        if(m_param_lp_cutoff > 0.0)
+        m_param_lp_cutoff -= .05;
+    }
+    
 
 }
 
@@ -256,16 +273,19 @@ void ofApp::windowResized(int w, int h){
 //--------------------------------------------------------------
 void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
     
+    double sample;
+    for (unsigned int i = 0; i < bufferSize; ++i ) {
+        
+        sample = sound.play();
+  
+        sample = m_filter_lp.lopass(sample, m_param_lp_cutoff);
+          
+        
+        output[i * nChannels] = sample;
+        output[i * nChannels + 1] = sample;
+        
+    }
     
-        for (int i = 0; i < bufferSize; i++){
-    
-//            maxiFilter myFilter;
-//            double myFilteredOutput = myFilter.lopass(sound.play(),3000);
-
-//            output[i*nChannels    ] = myFilteredOutput; /* You may end up with lots of outputs. add them here */
-//            output[i*nChannels + 1] = myFilteredOutput;
-    
-        }
     
     
 }
@@ -278,4 +298,9 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
+}
+void ofApp::exit() {
+    
+    ofSoundStreamClose();
+    
 }
